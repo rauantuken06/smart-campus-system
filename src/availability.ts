@@ -35,13 +35,13 @@ export function checkAvailability(
     reasons.push('This room is currently blocked and cannot be booked.');
   }
 
-  // AC4 — overlap check (touching endpoints allowed)
+  // AC4 — overlap check (BUG-A: touching endpoints treated as overlapping)
   if (room) {
     const overlapping = bookings.filter(
       (b) =>
         b.roomId === room.id &&
-        b.start < end && // existing start before candidate end
-        start < b.end     // candidate start before existing end
+        b.start <= end && // BUG-A: should be strict <
+        start <= b.end     // BUG-A: should be strict <
     );
     if (overlapping.length > 0) {
       reasons.push('The interval overlaps an existing booking.');
