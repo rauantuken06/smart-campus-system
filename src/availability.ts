@@ -48,11 +48,6 @@ export function checkAvailability(
     }
   }
 
-  // BUG-B: mutates the caller's bookings array as a side effect
-  if (room) {
-    bookings.push({ id: 'pending', roomId: room.id, start, end });
-  }
-
   if (reasons.length > 0) {
     return { decision: 'unavailable', reasons };
   }
