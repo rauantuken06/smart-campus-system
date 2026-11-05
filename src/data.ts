@@ -16,9 +16,3 @@ export const SAMPLE_BOOKINGS: Booking[] = [
   { id: 'b5', roomId: 'r4', start: 840, end: 900 },   // 14:00–15:00
   { id: 'b6', roomId: 'r5', start: 480, end: 540 },   // 08:00–09:00
 ];
-
-export function minutesToLabel(m: number): string {
-  const h = Math.floor(m / 60);
-  const mm = m % 60;
-  return `${String(h).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
-}

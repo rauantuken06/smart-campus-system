@@ -1,4 +1,5 @@
 import type { Room, Booking, AvailabilityResult } from './types';
+import { DAY_END_MINUTES, MAX_BOOKING_MINUTES } from './constants';
 
 /**
  * Checks whether a candidate interval can be booked for the given room.
@@ -18,16 +19,16 @@ export function checkAvailability(
   const reasons: string[] = [];
 
   // AC1 — interval validity
-  if (start < 0 || end > 1440 || start >= end) {
-    reasons.push('Interval must satisfy 0 ≤ start < end ≤ 1440 (minutes of day).');
+  if (start < 0 || end > DAY_END_MINUTES || start >= end) {
+    reasons.push(`Interval must satisfy 0 ≤ start < end ≤ ${DAY_END_MINUTES} (minutes of day).`);
   }
   if (start <= currentTime) {
     reasons.push(`Start time must be strictly after the current time (${currentTime} min).`);
   }
 
   // AC2 — max 120-minute booking
-  if (end - start > 120) {
-    reasons.push('Bookings cannot be longer than 120 minutes.');
+  if (end - start > MAX_BOOKING_MINUTES) {
+    reasons.push(`Bookings cannot be longer than ${MAX_BOOKING_MINUTES} minutes.`);
   }
 
   // AC3 — blocked room

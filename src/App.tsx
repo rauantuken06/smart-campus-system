@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react';
 import { Clock, Search, CalendarDays, Building2 } from 'lucide-react';
 import type { Room, AvailabilityResult } from './types';
-import { SAMPLE_ROOMS, SAMPLE_BOOKINGS, minutesToLabel } from './data';
+import { SAMPLE_ROOMS, SAMPLE_BOOKINGS } from './data';
 import { checkAvailability } from './availability';
+import { DAY_END_MINUTES, MAX_BOOKING_MINUTES } from './constants';
+import { minutesToLabel } from './time';
 import RoomCard from './components/RoomCard';
 import TimeSelector from './components/TimeSelector';
 import ResultBanner from './components/ResultBanner';
@@ -95,7 +97,7 @@ function App() {
               <input
                 type="number"
                 min={0}
-                max={1440}
+                max={DAY_END_MINUTES}
                 value={currentTime}
                 onChange={(e) => setCurrentTime(Number(e.target.value))}
                 className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
@@ -110,7 +112,7 @@ function App() {
             <div
               className={[
                 'rounded-lg px-3 py-2 text-sm font-medium',
-                duration > 120
+                duration > MAX_BOOKING_MINUTES
                   ? 'bg-amber-50 text-amber-700'
                   : duration <= 0
                     ? 'bg-red-50 text-red-700'
@@ -118,7 +120,7 @@ function App() {
               ].join(' ')}
             >
               Duration: {duration > 0 ? `${duration} min` : 'Invalid'}
-              {duration > 120 && ' (max 120 min)'}
+              {duration > MAX_BOOKING_MINUTES && ` (max ${MAX_BOOKING_MINUTES} min)`}
             </div>
 
             <button

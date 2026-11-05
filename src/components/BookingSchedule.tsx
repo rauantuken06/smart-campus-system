@@ -1,5 +1,5 @@
 import type { Booking } from '../types';
-import { minutesToLabel } from '../data';
+import { minutesToLabel } from '../time';
 
 interface BookingScheduleProps {
   bookings: Booking[];
@@ -17,7 +17,7 @@ export default function BookingSchedule({ bookings, roomName }: BookingScheduleP
 
   return (
     <div className="space-y-2">
-      {bookings
+      {[...bookings]
         .sort((a, b) => a.start - b.start)
         .map((b) => (
           <div
