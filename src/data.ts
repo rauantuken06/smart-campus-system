@@ -1,11 +1,11 @@
 import type { Room, Booking } from './types';
 
 export const SAMPLE_ROOMS: Room[] = [
-  { id: 'r1', name: 'Lecture Hall A', building: 'Science Block', capacity: 120, blocked: false },
-  { id: 'r2', name: 'Lab 201', building: 'Engineering Wing', capacity: 40, blocked: false },
-  { id: 'r3', name: 'Conference Room B', building: 'Main Building', capacity: 20, blocked: true },
-  { id: 'r4', name: 'Seminar Room 5', building: 'Library', capacity: 30, blocked: false },
-  { id: 'r5', name: 'Auditorium C', building: 'Arts Centre', capacity: 300, blocked: false },
+  { id: 'r1', name: 'Lecture Hall A', building: 'Science Block', capacity: 120, equipment: ['Projector', 'Microphone', 'Whiteboard'], blocked: false },
+  { id: 'r2', name: 'Lab 201', building: 'Engineering Wing', capacity: 40, equipment: ['Lab computers', 'Projector', 'Whiteboard'], blocked: false },
+  { id: 'r3', name: 'Conference Room B', building: 'Main Building', capacity: 20, equipment: ['Video conferencing', 'Projector'], blocked: true },
+  { id: 'r4', name: 'Seminar Room 5', building: 'Library', capacity: 30, equipment: ['Video conferencing', 'Whiteboard'], blocked: false },
+  { id: 'r5', name: 'Auditorium C', building: 'Arts Centre', capacity: 300, equipment: ['Microphone', 'Projector', 'Sound system'], blocked: false },
 ];
 
 export const SAMPLE_BOOKINGS: Booking[] = [

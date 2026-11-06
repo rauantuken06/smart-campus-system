@@ -11,6 +11,7 @@ function makeRoom(overrides: Partial<Room> = {}): Room {
     name: 'Test Room',
     building: 'Test Building',
     capacity: 50,
+    equipment: [],
     blocked: false,
     ...overrides,
   };

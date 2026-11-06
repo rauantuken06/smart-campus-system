@@ -1,14 +1,16 @@
 import { useState, useMemo } from 'react';
 import { Clock, Search, CalendarDays, Building2 } from 'lucide-react';
-import type { Room, AvailabilityResult } from './types';
+import type { Room, AvailabilityResult, CheckInputs } from './types';
 import { SAMPLE_ROOMS, SAMPLE_BOOKINGS } from './data';
-import { checkAvailability } from './availability';
+import { checkAvailability, isSameCheck } from './availability';
+import { filterRooms, getEquipmentOptions } from './roomFilters';
 import { DAY_END_MINUTES, MAX_BOOKING_MINUTES } from './constants';
 import { minutesToLabel } from './time';
-import RoomCard from './components/RoomCard';
 import TimeSelector from './components/TimeSelector';
 import ResultBanner from './components/ResultBanner';
 import BookingSchedule from './components/BookingSchedule';
+import RoomFilters from './components/RoomFilters';
+import RoomGrid from './components/RoomGrid';
 
 function App() {
   const [rooms] = useState<Room[]>(SAMPLE_ROOMS);
@@ -17,25 +19,51 @@ function App() {
   const [startTime, setStartTime] = useState(600);  // 10:00
   const [endTime, setEndTime] = useState(660);      // 11:00
   const [currentTime, setCurrentTime] = useState(480); // 08:00
-  const [result, setResult] = useState<AvailabilityResult | null>(null);
+  const [minCapacity, setMinCapacity] = useState(0);
+  const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
+  const [checked, setChecked] = useState<{ inputs: CheckInputs; outcome: AvailabilityResult } | null>(null);
+
+  const equipmentOptions = useMemo(() => getEquipmentOptions(rooms), [rooms]);
+
+  const filteredRooms = useMemo(
+    () => filterRooms(rooms, { minCapacity, equipment: selectedEquipment }),
+    [rooms, minCapacity, selectedEquipment]
+  );
+
+  const activeRoomId = filteredRooms.some((r) => r.id === selectedRoomId) ? selectedRoomId : null;
 
   const selectedRoom = useMemo(
-    () => rooms.find((r) => r.id === selectedRoomId) ?? null,
-    [rooms, selectedRoomId]
+    () => rooms.find((r) => r.id === activeRoomId) ?? null,
+    [rooms, activeRoomId]
   );
 
   const roomBookings = useMemo(
-    () => bookings.filter((b) => b.roomId === selectedRoomId),
-    [bookings, selectedRoomId]
+    () => bookings.filter((b) => b.roomId === activeRoomId),
+    [bookings, activeRoomId]
   );
 
+  const currentInputs: CheckInputs = {
+    roomId: activeRoomId,
+    start: startTime,
+    end: endTime,
+    currentTime,
+  };
+  const visibleResult =
+    checked && isSameCheck(checked.inputs, currentInputs) ? checked.outcome : null;
+
   const handleCheck = () => {
-    if (!selectedRoom) {
-      setResult({ decision: 'unavailable', reasons: ['Please select a room first.'] });
-      return;
-    }
-    const res = checkAvailability(selectedRoom, startTime, endTime, currentTime, bookings);
-    setResult(res);
+    const outcome = checkAvailability(selectedRoom, startTime, endTime, currentTime, roomBookings);
+    setChecked({ inputs: currentInputs, outcome });
+  };
+
+  const toggleEquipment = (item: string) =>
+    setSelectedEquipment((prev) =>
+      prev.includes(item) ? prev.filter((e) => e !== item) : [...prev, item]
+    );
+
+  const clearFilters = () => {
+    setMinCapacity(0);
+    setSelectedEquipment([]);
   };
 
   const duration = endTime - startTime;
@@ -63,16 +91,19 @@ function App() {
               <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-slate-700">
                 <Building2 size={18} className="text-teal-600" /> Select a Room
               </h2>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {rooms.map((room) => (
-                  <RoomCard
-                    key={room.id}
-                    room={room}
-                    selected={selectedRoomId === room.id}
-                    onSelect={() => setSelectedRoomId(room.id)}
-                  />
-                ))}
-              </div>
+              <RoomFilters
+                minCapacity={minCapacity}
+                equipmentOptions={equipmentOptions}
+                selectedEquipment={selectedEquipment}
+                onMinCapacityChange={setMinCapacity}
+                onToggleEquipment={toggleEquipment}
+                onClear={clearFilters}
+              />
+              <RoomGrid
+                rooms={filteredRooms}
+                selectedRoomId={activeRoomId}
+                onSelect={setSelectedRoomId}
+              />
             </section>
 
             {selectedRoom && (
@@ -130,7 +161,7 @@ function App() {
               <Search size={18} /> Check Availability
             </button>
 
-            <ResultBanner result={result} />
+            <ResultBanner result={visibleResult} />
           </aside>
         </div>
       </main>

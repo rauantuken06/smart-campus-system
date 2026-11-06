@@ -1,4 +1,4 @@
-import type { Room, Booking, AvailabilityResult } from './types';
+import type { Room, Booking, AvailabilityResult, CheckInputs } from './types';
 import { DAY_END_MINUTES, MAX_BOOKING_MINUTES } from './constants';
 
 /**
@@ -16,6 +16,10 @@ export function checkAvailability(
   currentTime: number,
   bookings: Booking[]
 ): AvailabilityResult {
+  if (!room) {
+    return { decision: 'unavailable', reasons: ['Please select a room first.'] };
+  }
+
   const reasons: string[] = [];
 
   // AC1 — interval validity
@@ -32,25 +36,32 @@ export function checkAvailability(
   }
 
   // AC3 — blocked room
-  if (room?.blocked) {
+  if (room.blocked) {
     reasons.push('This room is currently blocked and cannot be booked.');
   }
 
   // AC4 — overlap check (touching endpoints allowed)
-  if (room) {
-    const overlapping = bookings.filter(
-      (b) =>
-        b.roomId === room.id &&
-        b.start < end && // existing start before candidate end
-        start < b.end     // candidate start before existing end
-    );
-    if (overlapping.length > 0) {
-      reasons.push('The interval overlaps an existing booking.');
-    }
+  const overlapping = bookings.filter(
+    (b) =>
+      b.roomId === room.id &&
+      b.start < end && // existing start before candidate end
+      start < b.end     // candidate start before existing end
+  );
+  if (overlapping.length > 0) {
+    reasons.push('The interval overlaps an existing booking.');
   }
 
   if (reasons.length > 0) {
     return { decision: 'unavailable', reasons };
   }
   return { decision: 'available', reasons: ['This room is available for the selected interval.'] };
+}
+
+export function isSameCheck(a: CheckInputs, b: CheckInputs): boolean {
+  return (
+    a.roomId === b.roomId &&
+    a.start === b.start &&
+    a.end === b.end &&
+    a.currentTime === b.currentTime
+  );
 }
