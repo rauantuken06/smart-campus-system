@@ -4,8 +4,7 @@ import type { Room, AvailabilityResult, CheckInputs } from './types';
 import { SAMPLE_ROOMS, SAMPLE_BOOKINGS } from './data';
 import { checkAvailability, isSameCheck } from './availability';
 import { filterRooms, getEquipmentOptions } from './roomFilters';
-import { DAY_END_MINUTES, MAX_BOOKING_MINUTES } from './constants';
-import { minutesToLabel } from './time';
+import { MAX_BOOKING_MINUTES } from './constants';
 import TimeSelector from './components/TimeSelector';
 import ResultBanner from './components/ResultBanner';
 import BookingSchedule from './components/BookingSchedule';
@@ -122,19 +121,7 @@ function App() {
           <aside className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:sticky lg:top-6 lg:self-start">
             <h2 className="text-lg font-semibold text-slate-700">Check Availability</h2>
 
-            {/* Current time */}
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-slate-600">Current Time (min)</label>
-              <input
-                type="number"
-                min={0}
-                max={DAY_END_MINUTES}
-                value={currentTime}
-                onChange={(e) => setCurrentTime(Number(e.target.value))}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-              />
-              <span className="text-xs text-slate-400">{minutesToLabel(currentTime)}</span>
-            </div>
+            <TimeSelector label="Current Time (min)" value={currentTime} onChange={setCurrentTime} />
 
             <TimeSelector label="Start Time" value={startTime} onChange={setStartTime} />
             <TimeSelector label="End Time" value={endTime} onChange={setEndTime} />

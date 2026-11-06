@@ -1,11 +1,11 @@
 import type { Room } from './types';
 
-export interface RoomFilters {
+export interface RoomFilterCriteria {
   minCapacity: number;
   equipment: string[];
 }
 
-export function filterRooms(rooms: Room[], filters: RoomFilters): Room[] {
+export function filterRooms(rooms: Room[], filters: RoomFilterCriteria): Room[] {
   return rooms.filter(
     (room) =>
       room.capacity >= filters.minCapacity &&
