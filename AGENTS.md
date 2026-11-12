@@ -64,3 +64,32 @@ Before completing a refactoring task:
 - Explain the planned changes.
 - Do not assume this file was loaded automatically.
 - Wait for user approval before applying changes.
+
+
+## Verification Requirements
+
+Before accepting any code changes, run:
+
+```bash
+npm test
+npm run build
+npm run typecheck
+npm run lint
+```
+
+All failures must be reported. Never claim that an unexecuted test passed.
+
+## Security and Scope Restrictions
+
+- Do not access, expose, or commit secrets.
+- Do not introduce external services or databases.
+- Do not make unrelated code changes.
+- Preserve acceptance criteria AC1–AC6.
+- Do not modify production systems.
+
+## Human Review and Approval
+
+- Explain proposed changes before applying them.
+- Review the affected files and code differences.
+- Require human approval before merging or deploying.
+- Record test results and remaining risks.
