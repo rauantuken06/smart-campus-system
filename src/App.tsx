@@ -7,6 +7,7 @@ import { filterRooms, getEquipmentOptions } from './roomFilters';
 import { MAX_BOOKING_MINUTES } from './constants';
 import TimeSelector from './components/TimeSelector';
 import ResultBanner from './components/ResultBanner';
+import ExplainSection from './components/ExplainSection';
 import BookingSchedule from './components/BookingSchedule';
 import RoomFilters from './components/RoomFilters';
 import RoomGrid from './components/RoomGrid';
@@ -149,6 +150,14 @@ function App() {
             </button>
 
             <ResultBanner result={visibleResult} />
+
+            {visibleResult && selectedRoom && (
+              <ExplainSection
+                result={visibleResult}
+                roomName={selectedRoom.name}
+                inputs={currentInputs}
+              />
+            )}
           </aside>
         </div>
       </main>
