@@ -19,6 +19,12 @@ export const EXPLAIN_TIMEOUT_MS = 2000;
 
 export const EXPLAIN_FALLBACK_TEXT = 'Explanation temporarily unavailable.';
 
+export const MAX_EXPLAIN_SENTENCES = 2;
+
+function countSentences(text: string): number {
+  return text.split(/[.!?]\s*/).filter(Boolean).length;
+}
+
 function isExplainResult(value: unknown): value is ExplainResult {
   return (
     typeof value === 'object' &&
@@ -37,18 +43,24 @@ export async function explainSafely(
   adapter: LlmAdapter,
   req: ExplainRequest
 ): Promise<ExplainResult> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     const result = await Promise.race([
       adapter.explain(req),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('timeout')), EXPLAIN_TIMEOUT_MS)
-      ),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error('timeout')), EXPLAIN_TIMEOUT_MS);
+      }),
     ]);
-    if (!isExplainResult(result)) {
+    if (
+      !isExplainResult(result) ||
+      countSentences(result.text) > MAX_EXPLAIN_SENTENCES
+    ) {
       return { text: EXPLAIN_FALLBACK_TEXT, source: 'mock-llm' };
     }
     return result;
   } catch {
     return { text: EXPLAIN_FALLBACK_TEXT, source: 'mock-llm' };
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
   }
 }

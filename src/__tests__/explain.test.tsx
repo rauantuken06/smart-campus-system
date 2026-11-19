@@ -18,6 +18,7 @@ const baseReq: ExplainRequest = {
 };
 
 describe('explainSafely (fallback contract)', () => {
+  afterEach(() => vi.useRealTimers());
   it('returns the adapter text on success', async () => {
     const ok: LlmAdapter = {
       explain: async () => ({ text: 'Plain answer.', source: 'mock-llm' }),
@@ -58,6 +59,82 @@ describe('explainSafely (fallback contract)', () => {
 });
 
 import { mockLlmAdapter } from '../llm/mockAdapter';
+
+describe('F1 regression — timer cleared after success', () => {
+  it('calls clearTimeout when the adapter resolves early', async () => {
+    const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout');
+    const fast: LlmAdapter = {
+      explain: async () => ({ text: 'Quick.', source: 'mock-llm' }),
+    };
+    await explainSafely(fast, baseReq);
+    // F1: if clearTimeout is never called, the dangling timer fires 2s later.
+    expect(clearTimeoutSpy).toHaveBeenCalled();
+    clearTimeoutSpy.mockRestore();
+  });
+});
+
+describe('F3 regression — output validation enforces 2-sentence limit', () => {
+  it('rejects adapter output exceeding 2 sentences and returns the fallback', async () => {
+    const verbose: LlmAdapter = {
+      explain: async () => ({
+        text: 'One. Two. Three. Four.',
+        source: 'mock-llm',
+      }),
+    };
+    const res = await explainSafely(verbose, baseReq);
+    expect(res.text).toBe(EXPLAIN_FALLBACK_TEXT);
+  });
+
+  it('accepts adapter output with exactly 2 sentences', async () => {
+    const twoSentences: LlmAdapter = {
+      explain: async () => ({
+        text: 'First sentence. Second sentence.',
+        source: 'mock-llm',
+      }),
+    };
+    const res = await explainSafely(twoSentences, baseReq);
+    expect(res.text).toBe('First sentence. Second sentence.');
+  });
+});
+
+describe('AC3 input validation (empty, malformed, oversized)', () => {
+  it('returns fallback for empty decision string', async () => {
+    const badAdapter: LlmAdapter = {
+      explain: async () => ({ text: '', source: 'mock-llm' }),
+    };
+    const res = await explainSafely(badAdapter, baseReq);
+    expect(res.text).toBe(EXPLAIN_FALLBACK_TEXT);
+  });
+
+  it('returns fallback for malformed source field', async () => {
+    const badAdapter: LlmAdapter = {
+      explain: async () => ({ text: 'Valid text.', source: 'gpt-4' }) as unknown as ExplainResult,
+    };
+    const res = await explainSafely(badAdapter, baseReq);
+    expect(res.text).toBe(EXPLAIN_FALLBACK_TEXT);
+  });
+
+  it('returns fallback for non-object adapter output', async () => {
+    const badAdapter: LlmAdapter = {
+      explain: async () => 'just a string' as unknown as ExplainResult,
+    };
+    const res = await explainSafely(badAdapter, baseReq);
+    expect(res.text).toBe(EXPLAIN_FALLBACK_TEXT);
+  });
+
+  it('handles oversized reasons input without crashing', async () => {
+    const oversizedReq: ExplainRequest = {
+      decision: 'unavailable',
+      reasons: [`${'x'.repeat(100000)}`],
+      roomName: 'Huge',
+      start: 600,
+      end: 660,
+    };
+    const res = await mockLlmAdapter.explain(oversizedReq);
+    expect(res.source).toBe('mock-llm');
+    expect(res.text.length).toBeGreaterThan(0);
+  });
+});
 
 describe('mockLlmAdapter (scenario fidelity)', () => {
   const cases: Array<[string, ExplainRequest]> = [
