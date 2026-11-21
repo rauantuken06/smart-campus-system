@@ -7,6 +7,7 @@ Features
 - See a clear message when no rooms match the filters.
 - Select a room and check whether it is available for a chosen time interval.
 - Prevent bookings for blocked rooms, invalid or past intervals, durations over 120 minutes, and overlapping reservations.
+- Get a short plain-language explanation of any availability verdict via an "Explain availability" button (offline mock adapter, no network calls).
 - Allow booking intervals that touch an existing reservation's start or end time without overlapping.
 - Use only the selected room's bookings when checking availability.
 - Keep booking data unchanged during availability checks.
@@ -26,10 +27,12 @@ Run the application
 npm run dev
 Open the local address printed by Vite in the terminal.
 Run tests and checks
-npm test
-npm run build
-npm run typecheck
-The last recorded verification for Assignment #04 reported 44 passing tests across six test files, a successful production build, and a successful TypeScript type check. These are historical results; execute the commands above to verify your own copy.
+npm run verify
+```
+
+`npm run verify` runs the full quality gate in one command — tests, TypeScript type check, ESLint, and the production build — and fails at the first failing step.
+
+Current baseline: **76 passing tests across 9 test files**, a successful type check, a clean lint run, and a successful production build (about 161 KB of JavaScript, 51 KB gzipped).
 Main project files
 File	Responsibility
 src/App.tsx	Application state and component integration
@@ -42,6 +45,9 @@ src/time.ts	Time formatting utility
 src/components/RoomFilters.tsx	Filter controls
 src/components/RoomGrid.tsx	Room list and empty state
 src/components/TimeSelector.tsx	Reusable time input
+src/components/ExplainSection.tsx	Explain-availability button and result display
+src/llm/explain.ts	Explain adapter interface, validation, and timeout
+src/llm/mockAdapter.ts	Deterministic offline mock adapter
 src/__tests__/	Unit and component rendering tests
 
 
@@ -53,6 +59,8 @@ How to use
 5. If you change a room or time input, run the availability check again for an updated result.
 Scope and known limitations
 - Room and booking data are fictional and stored locally; no database, authentication, payments, or live APIs are used.
+- The Explain feature uses a built-in offline mock adapter — it never sends data over the network, and its output is validated and capped at 2 sentences before display.
+- There is no CI or pre-commit automation; `npm run verify` is the quality gate but must be run manually.
 - The current time is entered manually, rather than read from a real-time clock.
 - Automated tests cover booking and filtering rules and some static component rendering. They do not fully cover browser interactions or responsive layout; stale-result protection is tested through a helper rather than a full interactive React test.
 AI-assisted development

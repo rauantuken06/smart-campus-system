@@ -38,7 +38,7 @@ src/
 ├── llm/
 │   ├── explain.ts           LlmAdapter interface, explainSafely(), output validation, timeout
 │   └── mockAdapter.ts       Deterministic offline adapter (≤2-sentence template)
-└── __tests__/               Vitest unit + component tests (8 files, 70 tests)
+└── __tests__/               Vitest unit + component tests (9 files, 76 tests)
 ```
 
 ### Data flow
@@ -64,11 +64,12 @@ Requirements: Node.js and npm.
 These commands are safe to run at any time and do not modify source files:
 
 ```bash
-npm test           # run all Vitest tests (70 tests across 8 files)
+npm test           # run all Vitest tests (76 tests across 9 files)
 npm run build      # production build via Vite
 npm run typecheck  # TypeScript type check (tsc --noEmit)
 npm run lint       # ESLint
 npm run preview    # preview the production build locally
+npm run verify     # runs test && typecheck && lint && build sequentially
 ```
 
 ## 5. Acceptance Criteria (AC1–AC6)
@@ -105,7 +106,7 @@ Additional feature rules:
 
 ## 7. Test Expectations
 
-- Run `npm test` before considering work complete. All 70 tests must pass.
+- Run `npm run verify` before considering work complete. All 76 tests must pass.
 - Do not remove or weaken existing tests.
 - Add focused regression tests when fixing a bug or adding a rule.
 - Test the explain feature for: fallback on rejection, fallback on timeout, fallback on malformed output, fallback on >2-sentence output, scenario fidelity (overlap, blocked, invalid, past, available), and UI integration.
@@ -173,7 +174,7 @@ All failures must be reported. Never claim that an unexecuted test passed. Never
 These are documented for awareness; do not fix unless explicitly tasked:
 
 - `@supabase/supabase-js` is listed in `package.json` but unused in `src/` — candidate for removal with human approval.
-- `TimeSelector` passes raw `Number()` values without clamping to 0–1440 or coercing NaN to 0. NaN can break the duration hint and the stale-result guard (`isSameCheck`).
+- `TimeSelector` passes raw `Number()` values without clamping to 0–1440. NaN is **not** user-reachable: number inputs sanitize invalid values to an empty string, so `Number('') === 0` (verified by component test in `TimeSelector.w2.test.tsx`). Unclamped finite values (negative, >1440) pass through and are correctly rejected by AC1; the per-input hint shows the raw value, which is cosmetic only.
 - `ExplainSection` has no unmount guard during a pending LLM request. React 18 silently ignores `setPhase` on an unmounted component, so there is no visible bug, but a `mountedRef` or `AbortController` would be more correct.
-- `BookingSchedule` has only 1 test (empty state). Sort-order and multi-booking rendering are untested.
-- No CI or pre-commit hooks enforce the verification commands.
+- `BookingSchedule` has 2 tests (sort order + input non-mutation, empty state). Multi-booking rendering (3+ bookings) is untested.
+- No CI or pre-commit hooks enforce the verification commands. `npm run verify` exists as a local quality gate but is opt-in, so this gap is only partially mitigated.
