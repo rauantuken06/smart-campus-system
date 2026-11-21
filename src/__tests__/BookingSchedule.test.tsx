@@ -18,4 +18,14 @@ describe('BookingSchedule', () => {
     expect(html.indexOf('09:00')).toBeLessThan(html.indexOf('12:00'));
     expect(bookings.map((b) => b.id)).toEqual(snapshot);
   });
+
+  it('shows the empty-state message and no booking rows for an empty schedule', () => {
+    const html = renderToStaticMarkup(
+      <BookingSchedule bookings={[]} roomName="Lab" />
+    );
+
+    expect(html).toContain('No existing bookings for this room.');
+    expect(html).not.toContain('Lab');
+    expect(html).not.toContain(':');
+  });
 });
