@@ -11,6 +11,7 @@ import ExplainSection from './components/ExplainSection';
 import BookingSchedule from './components/BookingSchedule';
 import RoomFilters from './components/RoomFilters';
 import RoomGrid from './components/RoomGrid';
+import ComparisonSection from './components/ComparisonSection';
 
 function App() {
   const [rooms] = useState<Room[]>(SAMPLE_ROOMS);
@@ -160,6 +161,8 @@ function App() {
             )}
           </aside>
         </div>
+
+        <ComparisonSection />
       </main>
     </div>
   );
