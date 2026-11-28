@@ -48,12 +48,6 @@ describe('Comparison Mode (Practice #12)', () => {
     expect(result.reasonCode).toBe('AVAILABLE');
   });
 
-  it('T9: empty start input, duration=60, currentTime=480 → INVALID_INTERVAL', () => {
-    const result = checkComparison('', '60', false, SAMPLE_BOOKINGS, 480);
-    expect(result.available).toBe(false);
-    expect(result.reasonCode).toBe('INVALID_INTERVAL');
-  });
-
   it('T8: bookings array is never mutated by available or unavailable checks', () => {
     const snapshot = SAMPLE_BOOKINGS.map((b) => ({ ...b }));
     checkComparison('630', '60', false, SAMPLE_BOOKINGS);

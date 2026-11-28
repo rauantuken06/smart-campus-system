@@ -1,5 +1,5 @@
 import type { Room, Booking, AvailabilityResult, CheckInputs } from './types';
-import { BLOCKED_MESSAGE, DAY_END_MINUTES, MAX_BOOKING_MINUTES, OVERLAP_MESSAGE } from './constants';
+import { DAY_END_MINUTES, MAX_BOOKING_MINUTES } from './constants';
 
 /**
  * Checks whether a candidate interval can be booked for the given room.
@@ -37,7 +37,7 @@ export function checkAvailability(
 
   // AC3 — blocked room
   if (room.blocked) {
-    reasons.push(BLOCKED_MESSAGE);
+    reasons.push('This room is currently blocked and cannot be booked.');
   }
 
   // AC4 — overlap check (touching endpoints allowed)
@@ -48,7 +48,7 @@ export function checkAvailability(
       start < b.end     // candidate start before existing end
   );
   if (overlapping.length > 0) {
-    reasons.push(OVERLAP_MESSAGE);
+    reasons.push('The interval overlaps an existing booking.');
   }
 
   if (reasons.length > 0) {
