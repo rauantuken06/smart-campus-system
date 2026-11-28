@@ -1,6 +1,6 @@
 import type { Booking, Room } from './types';
 import { checkAvailability } from './availability';
-import { DAY_END_MINUTES, MAX_BOOKING_MINUTES } from './constants';
+import { BLOCKED_MESSAGE, DAY_END_MINUTES, MAX_BOOKING_MINUTES, OVERLAP_MESSAGE } from './constants';
 import { SAMPLE_ROOMS } from './data';
 
 export const COMPARISON_ROOM_ID = 'r1';
@@ -82,14 +82,14 @@ export function checkComparison(
     };
   }
 
-  if (engineResult.reasons.some((r) => r.includes('blocked'))) {
+  if (engineResult.reasons.some((r) => r === BLOCKED_MESSAGE)) {
     return {
       available: false,
       reasonCode: 'BLOCKED',
       message: 'This room is currently blocked and cannot be booked.',
     };
   }
-  if (engineResult.reasons.some((r) => r.includes('overlaps'))) {
+  if (engineResult.reasons.some((r) => r === OVERLAP_MESSAGE)) {
     return {
       available: false,
       reasonCode: 'OVERLAP',
